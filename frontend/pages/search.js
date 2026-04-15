@@ -9,7 +9,6 @@ export default function SearchPage() {
     min_beds: 3,
     min_baths: 2,
   })
-
   const [results, setResults] = useState([])
 
   const handleSearch = async () => {
@@ -20,10 +19,8 @@ export default function SearchPage() {
       min_beds: String(form.min_beds),
       min_baths: String(form.min_baths),
     })
-
     const res = await fetch(`http://127.0.0.1:8000/search?${params.toString()}`)
-    const data = await res.json()
-    setResults(data)
+    setResults(await res.json())
   }
 
   return (
@@ -31,51 +28,16 @@ export default function SearchPage() {
       <h1>Property Search</h1>
       <Link href="/">Home</Link>
 
-      <div
-        style={{
-          marginTop: '1rem',
-          display: 'grid',
-          gap: '0.5rem',
-          maxWidth: '400px',
-        }}
-      >
-        <input
-          value={form.state_code}
-          onChange={(e) => setForm({ ...form, state_code: e.target.value })}
-          placeholder="State code"
-        />
-        <input
-          type="number"
-          value={form.min_price}
-          onChange={(e) => setForm({ ...form, min_price: e.target.value })}
-          placeholder="Min price"
-        />
-        <input
-          type="number"
-          value={form.max_price}
-          onChange={(e) => setForm({ ...form, max_price: e.target.value })}
-          placeholder="Max price"
-        />
-        <input
-          type="number"
-          value={form.min_beds}
-          onChange={(e) => setForm({ ...form, min_beds: e.target.value })}
-          placeholder="Min beds"
-        />
-        <input
-          type="number"
-          value={form.min_baths}
-          onChange={(e) => setForm({ ...form, min_baths: e.target.value })}
-          placeholder="Min baths"
-        />
+      <div style={{ marginTop: '1rem', display: 'grid', gap: '0.5rem', maxWidth: '400px' }}>
+        <input value={form.state_code} onChange={(e) => setForm({ ...form, state_code: e.target.value })} placeholder="State code" />
+        <input type="number" value={form.min_price} onChange={(e) => setForm({ ...form, min_price: e.target.value })} placeholder="Min price" />
+        <input type="number" value={form.max_price} onChange={(e) => setForm({ ...form, max_price: e.target.value })} placeholder="Max price" />
+        <input type="number" value={form.min_beds} onChange={(e) => setForm({ ...form, min_beds: e.target.value })} placeholder="Min beds" />
+        <input type="number" value={form.min_baths} onChange={(e) => setForm({ ...form, min_baths: e.target.value })} placeholder="Min baths" />
         <button onClick={handleSearch}>Search</button>
       </div>
 
-      <table
-        border="1"
-        cellPadding="8"
-        style={{ borderCollapse: 'collapse', width: '100%', marginTop: '1rem' }}
-      >
+      <table border="1" cellPadding="8" style={{ borderCollapse: 'collapse', width: '100%', marginTop: '1rem' }}>
         <thead>
           <tr>
             <th>Listing ID</th>
