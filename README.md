@@ -2,6 +2,7 @@
 Full-stack real estate analytics web app using PostgreSQL, FastAPI, Next.js, and Plotly
 
 Team
+
 Kesigan Sribaskararajah
 Anusha Siddaramanna
 Connor Ryan
