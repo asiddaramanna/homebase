@@ -1,0 +1,16 @@
+{
+  "name": "homebase-frontend",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "plotly.js-dist-min": "latest",
+    "react-plotly.js": "latest"
+  }
+}
