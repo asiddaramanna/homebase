@@ -1,6 +1,6 @@
 # homebase
 Full-stack real estate analytics web app using PostgreSQL, FastAPI, Next.js, and Plotly
-
+---
 <br>
 Team
 
@@ -21,7 +21,7 @@ Tech Stack:
   
   Plotly – data visualization for market trends
 
-
+<br>
 Features
 
   Property Search
@@ -40,7 +40,7 @@ Features
   
     Identify the most affordable zip codes within a state
 
-
+<br>
 Database
 
   The application integrates:
@@ -49,7 +49,7 @@ Database
   
   Redfin market data (about 9.5M records across 24,000+ zip codes)
 
-
+<br>
 How to Run
 
 Backend
@@ -74,7 +74,7 @@ Then open the following to see the frontend and backend
   
   Backend docs → http://localhost:8000/docs
 
-
+<br>
 Testing
 
 SQL-based validation tests were implemented to ensure correctness of:
@@ -87,5 +87,5 @@ SQL-based validation tests were implemented to ensure correctness of:
   
   edge cases such as NULL values and divide-by-zero
 
-
+<br>
 All tests returned 0 invalid rows (except test 2 which is not supposed to return 0), confirming query correctness.
