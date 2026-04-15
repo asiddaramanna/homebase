@@ -10,14 +10,13 @@ export default function TrendsPage() {
   const [results, setResults] = useState([])
 
   const handleLoad = async () => {
-    const res = await fetch(`http://localhost:8000/trends?zip_code=${zipCode}&property_type=${encodeURIComponent(propertyType)}`)
-    const data = await res.json()
-    setResults(data)
+    const res = await fetch(`http://127.0.0.1:8000/trends?zip_code=${zipCode}&property_type=${encodeURIComponent(propertyType)}`)
+    setResults(await res.json())
   }
 
   const x = results.map((r) => r.period_begin)
-  const salePrices = results.map((r) => r.median_sale_price)
-  const listPrices = results.map((r) => r.median_list_price)
+  const sale = results.map((r) => r.median_sale_price)
+  const list = results.map((r) => r.median_list_price)
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
@@ -37,11 +36,11 @@ export default function TrendsPage() {
       </div>
 
       {results.length > 0 && (
-        <div style={{ marginTop: '1.5rem' }}>
+        <div style={{ marginTop: '1rem' }}>
           <Plot
             data={[
-              { x, y: salePrices, type: 'scatter', mode: 'lines+markers', name: 'Median Sale Price' },
-              { x, y: listPrices, type: 'scatter', mode: 'lines+markers', name: 'Median List Price' },
+              { x, y: sale, type: 'scatter', mode: 'lines+markers', name: 'Median Sale Price' },
+              { x, y: list, type: 'scatter', mode: 'lines+markers', name: 'Median List Price' },
             ]}
             layout={{ width: 900, height: 500, title: `Price Trends for ${zipCode}` }}
           />
