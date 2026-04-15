@@ -24,8 +24,8 @@ Features
 
 Database
   The application integrates:
-  Realtor.com listing data (~2.2M records)
-  Redfin market data (~9.5M records across 24,000+ zip codes)
+  Realtor.com listing data (about 2.2M records)
+  Redfin market data (about 9.5M records across 24,000+ zip codes)
 
 How to Run
 Backend
