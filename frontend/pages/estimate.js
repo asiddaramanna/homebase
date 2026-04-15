@@ -7,9 +7,8 @@ export default function EstimatePage() {
   const [result, setResult] = useState(null)
 
   const handleEstimate = async () => {
-    const res = await fetch(`http://localhost:8000/estimate?zip_code=${zipCode}&sqft=${sqft}`)
-    const data = await res.json()
-    setResult(data)
+    const res = await fetch(`http://127.0.0.1:8000/estimate?zip_code=${zipCode}&sqft=${sqft}`)
+    setResult(await res.json())
   }
 
   return (
@@ -24,12 +23,12 @@ export default function EstimatePage() {
       </div>
 
       {result && (
-        <div style={{ marginTop: '1.5rem' }}>
+        <div style={{ marginTop: '1rem' }}>
           <p><strong>Comparable Sales:</strong> {result.comp_count}</p>
           <p><strong>Average Price:</strong> {result.avg_price}</p>
-          <p><strong>Median Price:</strong> {result.median_price}</p>
           <p><strong>Min Price:</strong> {result.min_price}</p>
           <p><strong>Max Price:</strong> {result.max_price}</p>
+          <p><strong>Median Price:</strong> {result.median_price}</p>
           <p><strong>25th Percentile:</strong> {result.p25_price}</p>
           <p><strong>75th Percentile:</strong> {result.p75_price}</p>
         </div>
