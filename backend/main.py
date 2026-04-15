@@ -1,4 +1,86 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import psycopg2
+import psycopg2.extras
+
+app = FastAPI()
+
+# Allow frontend (Next.js) to call backend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Database connection
+DB_CONFIG = {
+    "host": "homebase.c4lebab1ydn7.us-east-1.rds.amazonaws.com",
+    "port": 5432,
+    "dbname": "homebase",
+    "user": "guest",
+    "password": "CIS5500guest2026",
+    "sslmode": "require",
+}
+
+
+def run_query(sql, params=None):
+    conn = psycopg2.connect(**DB_CONFIG)
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(sql, params or ())
+            return cur.fetchall()
+    finally:
+        conn.close()
+
+
+@app.get("/")
+def root():
+    return {"message": "HomeBase API running"}
+
+
+# -----------------------
+# SUMMARY
+# -----------------------
+@app.get("/summary")
+def get_summary():
+    sql = """
+    SELECT
+        status,
+        COUNT(*) AS total_listings,
+        ROUND(AVG(price), 2) AS avg_price,
+        PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY price) AS median_price,
+        MIN(price) AS min_price,
+        MAX(price) AS max_price
+    FROM property_listing
+    WHERE price IS NOT NULL
+    GROUP BY status
+    ORDER BY total_listings DESC;
+    """
+    return run_query(sql)
+
+
+# -----------------------
+# PROPERTY SEARCH
+# -----------------------
+@app.get("/search")
+def property_search(
+    state_code: str,
+    min_price: int,
+    max_price: int,
+    min_beds: int = 0,
+    min_baths: int = 0,
+):
+    sql = """
+    SELECT
+        pl.listing_id,
+        pl.zip_code,
+        l.city,
+        l.state,
+        pl.status,
+        pl.price,
+        pl.bed,
         pl.bath,
         pl.house_size,
         pl.acre_lot
@@ -10,11 +92,14 @@ from fastapi import FastAPI, Query
       AND COALESCE(pl.bed, 0) >= %s
       AND COALESCE(pl.bath, 0) >= %s
     ORDER BY pl.price ASC
-    LIMIT %s OFFSET %s;
+    LIMIT 20;
     """
-    return run_query(sql, (state_code, min_price, max_price, min_beds, min_baths, limit, offset))
+    return run_query(sql, (state_code, min_price, max_price, min_beds, min_baths))
 
 
+# -----------------------
+# GET YOUR PRICE
+# -----------------------
 @app.get("/estimate")
 def estimate_value(zip_code: str, sqft: int):
     sql = """
@@ -23,9 +108,7 @@ def estimate_value(zip_code: str, sqft: int):
         ROUND(AVG(price), 2) AS avg_price,
         MIN(price) AS min_price,
         MAX(price) AS max_price,
-        PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY price) AS median_price,
-        PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY price) AS p25_price,
-        PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY price) AS p75_price
+        PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY price) AS median_price
     FROM property_listing
     WHERE zip_code = %s
       AND status = 'sold'
@@ -37,23 +120,20 @@ def estimate_value(zip_code: str, sqft: int):
     return rows[0] if rows else {}
 
 
+# -----------------------
+# MARKET TRENDS
+# -----------------------
 @app.get("/trends")
-def market_trends(zip_code: str, property_type: str = "All Residential"):
+def market_trends(zip_code: str):
     sql = """
     SELECT
-        ms.period_begin,
-        ms.period_end,
-        ms.median_sale_price,
-        ms.median_list_price,
-        ms.median_ppsf,
-        ms.median_dom,
-        ms.inventory,
-        ms.homes_sold,
-        ms.avg_sale_to_list
-    FROM market_snapshot ms
-    JOIN property_type_mapping ptm ON ms.type_id = ptm.type_id
-    WHERE ms.zip_code = %s
-      AND ptm.standardized_label = %s
-    ORDER BY ms.period_begin ASC;
+        period_begin,
+        median_sale_price,
+        median_list_price,
+        inventory,
+        homes_sold
+    FROM market_snapshot
+    WHERE zip_code = %s
+    ORDER BY period_begin ASC;
     """
-    return run_query(sql, (zip_code, property_type))
+    return run_query(sql, (zip_code,))
