@@ -133,3 +133,18 @@ tr:hover td {
   font-size: 28px;
   font-weight: 700;
 }
+
+input,
+select {
+  outline: none;
+}
+
+input:focus,
+select:focus {
+  border-color: #93c5fd !important;
+  box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.35);
+}
+
+button:hover {
+  opacity: 0.96;
+}
