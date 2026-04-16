@@ -11,6 +11,17 @@ export default function Home() {
       .catch((err) => console.error(err))
   }, [])
 
+  function formatStatus(status) {
+  if (!status) return ''
+  
+  return status
+    .split('_')
+    .map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    )
+    .join(' ')
+  }
+
   const totalListings = useMemo(() => {
     return summary.reduce((acc, row) => acc + Number(row.total_listings || 0), 0)
   }, [summary])
@@ -34,7 +45,7 @@ export default function Home() {
   return (
     <div className="page">
       <section className="hero">
-        <h1>HomeBase</h1>
+        <h1>Home Base</h1>
         <p>
           A full-stack real estate analytics platform for home buyers, investors,
           and market research.
@@ -88,7 +99,7 @@ export default function Home() {
             <tbody>
               {summary.map((row, idx) => (
                 <tr key={idx}>
-                  <td>{row.status}</td>
+                  <td>{formatStatus(row.status)}</td>
                   <td>{formatNumber(row.total_listings)}</td>
                   <td>{formatMoney(row.avg_price)}</td>
                   <td>{formatMoney(row.median_price)}</td>
