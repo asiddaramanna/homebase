@@ -94,21 +94,23 @@ def property_search(
 # Query 2
 @app.get("/estimate")
 def estimate_value(zip_code: str, sqft: int):
-    sql = """
+    sql = sql = """
     SELECT
         COUNT(*) AS comp_count,
         ROUND(AVG(price), 2) AS avg_price,
         MIN(price) AS min_price,
         MAX(price) AS max_price,
-        PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY price) AS median_price,
         PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY price) AS p25_price,
+        PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY price) AS median_price,
         PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY price) AS p75_price
     FROM property_listing
     WHERE zip_code = %s
       AND status = 'sold'
       AND price IS NOT NULL
-      AND house_size BETWEEN %s * 0.80 AND %s * 1.20
-      AND prev_sold_date >= CURRENT_DATE - INTERVAL '18 months';
+      AND (
+            house_size IS NULL
+            OR house_size BETWEEN %s * 0.60 AND %s * 1.40
+          );
     """
     rows = run_query(sql, (zip_code, sqft, sqft))
     return rows[0] if rows else {}
