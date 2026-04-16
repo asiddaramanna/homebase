@@ -95,7 +95,19 @@ export default function EstimatePage() {
       <section className="sectionCard">
         <h2 className="sectionTitle" style={{ fontSize: '28px' }}>Estimate Results</h2>
 
-        {result ? (
+        {!result && (
+          <p style={{ color: '#6b7280' }}>
+            Run the estimator to view comparable-sale metrics.
+          </p>
+        )}
+
+        {result && result.comp_count === 0 && (
+          <p style={{ color: '#6b7280' }}>
+            No comparable properties found. Try a different ZIP code or square footage.
+          </p>
+        )}
+
+        {result && result.comp_count > 0 && (
           <>
             <div className="statRow">
               <div className="statCard">
@@ -135,8 +147,6 @@ export default function EstimatePage() {
               </table>
             </div>
           </>
-        ) : (
-          <p style={{ color: '#6b7280' }}>Run the estimator to view comparable-sale metrics.</p>
         )}
       </section>
     </div>
