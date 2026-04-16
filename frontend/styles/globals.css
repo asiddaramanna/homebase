@@ -148,3 +148,10 @@ select:focus {
 button:hover {
   opacity: 0.96;
 }
+label {
+  color: #374151;
+}
+
+p {
+  line-height: 1.6;
+}
