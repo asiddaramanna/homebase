@@ -48,7 +48,7 @@ export default function Home() {
         <h1>Home Base</h1>
         <p>
           A full-stack real estate analytics platform for home buyers, investors,
-          and market research.
+          and market researchers.
         </p>
       </section>
 
