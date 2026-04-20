@@ -26,10 +26,15 @@ export default function Home() {
     return summary.reduce((acc, row) => acc + Number(row.total_listings || 0), 0)
   }, [summary])
 
-  const avgOfAverages = useMemo(() => {
+  const medianOfMedians = useMemo(() => {
     if (!summary.length) return null
-    const vals = summary.map((row) => Number(row.avg_price || 0))
-    return vals.reduce((a, b) => a + b, 0) / vals.length
+    const vals = summary
+      .map((row) => Number(row.median_price || 0))
+      .filter((v) => v > 0)
+      .sort((a, b) => a - b)
+    if (!vals.length) return null
+    const mid = Math.floor(vals.length / 2)
+    return vals.length % 2 === 0 ? (vals[mid - 1] + vals[mid]) / 2 : vals[mid]
   }, [summary])
 
   const formatNumber = (value) => {
@@ -74,9 +79,9 @@ export default function Home() {
           <div className="statValue">{formatNumber(totalListings)}</div>
         </div>
         <div className="statCard">
-          <div className="statLabel">Average of Status Averages</div>
+          <div className="statLabel">Median of Status Medians</div>
           <div className="statValue">
-            {avgOfAverages ? formatMoney(avgOfAverages.toFixed(0)) : ''}
+            {medianOfMedians ? formatMoney(medianOfMedians.toFixed(0)) : ''}
           </div>
         </div>
       </div>
@@ -90,10 +95,10 @@ export default function Home() {
               <tr>
                 <th>Status</th>
                 <th>Total Listings</th>
-                <th>Avg Price</th>
                 <th>Median Price</th>
-                <th>Min Price</th>
-                <th>Max Price</th>
+                <th>Avg Beds</th>
+                <th>Avg Baths</th>
+                <th>Avg Sqft</th>
               </tr>
             </thead>
             <tbody>
@@ -101,10 +106,10 @@ export default function Home() {
                 <tr key={idx}>
                   <td>{formatStatus(row.status)}</td>
                   <td>{formatNumber(row.total_listings)}</td>
-                  <td>{formatMoney(row.avg_price)}</td>
                   <td>{formatMoney(row.median_price)}</td>
-                  <td>{formatMoney(row.min_price)}</td>
-                  <td>{formatMoney(row.max_price)}</td>
+                  <td>{row.avg_beds}</td>
+                  <td>{row.avg_baths}</td>
+                  <td>{formatNumber(row.avg_sqft)}</td>
                 </tr>
               ))}
             </tbody>

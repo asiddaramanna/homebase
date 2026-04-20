@@ -35,24 +35,19 @@ def run_query(sql, params=None):
 def root():
     return {"message": "HomeBase API running"}
 
-# Query 5
+# Query 5 — reads from mv_national_summary (precomputed aggregate over ~2.2M listings)
 @app.get("/summary")
 def get_summary():
     sql = """
     SELECT
         status,
-        COUNT(*) AS total_listings,
-        ROUND(AVG(price), 2) AS avg_price,
-        PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY price) AS median_price,
-        MIN(price) AS min_price,
-        MAX(price) AS max_price,
-        ROUND(AVG(bed), 1) AS avg_beds,
-        ROUND(AVG(bath), 1) AS avg_baths,
-        ROUND(AVG(house_size), 0) AS avg_sqft
-    FROM property_listing
-    WHERE price IS NOT NULL
-    GROUP BY status
-    ORDER BY total_listings DESC;
+        count AS total_listings,
+        ROUND(median_price::numeric, 2) AS median_price,
+        ROUND(avg_bed, 1) AS avg_beds,
+        ROUND(avg_bath, 1) AS avg_baths,
+        ROUND(avg_sqft, 0) AS avg_sqft
+    FROM mv_national_summary
+    ORDER BY count DESC;
     """
     return run_query(sql)
 
