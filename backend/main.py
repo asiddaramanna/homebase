@@ -1,7 +1,10 @@
-from fastapi import FastAPI
+import os
+
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 import psycopg2
 import psycopg2.extras
+from psycopg2 import pool
 
 app = FastAPI()
 
@@ -14,22 +17,28 @@ app.add_middleware(
 )
 
 DB_CONFIG = {
-    "host": "homebase.c4lebab1ydn7.us-east-1.rds.amazonaws.com",
-    "port": 5432,
-    "dbname": "homebase",
-    "user": "guest",
-    "password": "CIS5500guest2026",
+    "host": os.environ.get("PG_HOST", "homebase.c4lebab1ydn7.us-east-1.rds.amazonaws.com"),
+    "port": int(os.environ.get("PG_PORT", "5432")),
+    "dbname": os.environ.get("PG_DATABASE", "homebase"),
+    "user": os.environ.get("PG_USER", "guest"),
+    "password": os.environ.get("PG_PASSWORD", "CIS5500guest2026"),
     "sslmode": "require",
 }
 
+connection_pool = pool.SimpleConnectionPool(1, 10, **DB_CONFIG)
+
+
 def run_query(sql, params=None):
-    conn = psycopg2.connect(**DB_CONFIG)
+    conn = connection_pool.getconn()
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute(sql, params or ())
             return cur.fetchall()
+    except psycopg2.Error as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {e.pgerror or str(e)}")
     finally:
-        conn.close()
+        connection_pool.putconn(conn)
 
 @app.get("/")
 def root():
@@ -54,9 +63,9 @@ def get_summary():
 # Query 1
 @app.get("/search")
 def property_search(
-    state_code: str,
-    min_price: int,
-    max_price: int,
+    state_code: str = Query(..., min_length=2, max_length=2),
+    min_price: int = Query(...),
+    max_price: int = Query(...),
     min_beds: int = 0,
     min_baths: int = 0,
     limit: int = 20,
@@ -88,7 +97,10 @@ def property_search(
 
 # Query 2
 @app.get("/estimate")
-def estimate_value(zip_code: str, sqft: int):
+def estimate_value(
+    zip_code: str = Query(..., min_length=5, max_length=5),
+    sqft: int = Query(...),
+):
     sql = sql = """
     SELECT
         COUNT(*) AS comp_count,
@@ -112,7 +124,10 @@ def estimate_value(zip_code: str, sqft: int):
 
 # Query 3
 @app.get("/trends")
-def market_trends(zip_code: str, property_type: str = "All Residential"):
+def market_trends(
+    zip_code: str = Query(..., min_length=5, max_length=5),
+    property_type: str = "All Residential",
+):
     sql = """
     SELECT
         ms.period_begin,
@@ -134,7 +149,7 @@ def market_trends(zip_code: str, property_type: str = "All Residential"):
 
 # Query 4
 @app.get("/affordability")
-def affordability(state_code: str):
+def affordability(state_code: str = Query(..., min_length=2, max_length=2)):
     sql = """
     SELECT
         pl.zip_code,
@@ -158,7 +173,7 @@ def affordability(state_code: str):
 
 # Query 6
 @app.get("/trends-by-type")
-def trends_by_type(zip_code: str):
+def trends_by_type(zip_code: str = Query(..., min_length=5, max_length=5)):
     sql = """
     SELECT
         ms.period_begin,
@@ -291,7 +306,7 @@ def yoy_appreciation():
 
 # Query 10
 @app.get("/market-balance")
-def market_balance(state_code: str):
+def market_balance(state_code: str = Query(..., min_length=2, max_length=2)):
     sql = """
     SELECT
         ms.zip_code,
