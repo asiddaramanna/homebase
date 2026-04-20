@@ -261,6 +261,10 @@ def yoy_appreciation():
         JOIN property_type_mapping ptm ON ms.type_id = ptm.type_id
         WHERE ptm.standardized_label = 'All Residential'
           AND ms.median_sale_price IS NOT NULL
+          AND EXTRACT(YEAR FROM ms.period_begin)::INT >= (
+              SELECT MAX(EXTRACT(YEAR FROM period_begin)::INT) - 1
+              FROM market_snapshot
+          )
         GROUP BY l.state_code, l.state, price_year
     )
     SELECT
